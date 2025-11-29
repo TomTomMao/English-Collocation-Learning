@@ -32,7 +32,7 @@ export type GapReview = {
 interface CollocationState {
   saved: SavedCollocation[];
   collocations: Collocation[];
-  addToSaved: (collocation: Collocation) => void;
+  addToSaved: (collocation: Collocation) => boolean;
   removeSaved: (id: string) => void;
 }
 
@@ -41,11 +41,17 @@ export const useCollocations = create<CollocationState>()(
     (set) => ({
       saved: [],
       collocations: mockCollocations,
-      addToSaved: (collocation: Collocation) =>
+      addToSaved: (collocation: Collocation) => {
+        let added = false;
+
         set((state) => {
           if (state.saved.some((item) => item.id === collocation.id)) return state;
+          added = true;
           return { ...state, saved: [...state.saved, { ...collocation, mastery: 'New' }] };
-        }),
+        });
+
+        return added;
+      },
       removeSaved: (id: string) =>
         set((state) => ({
           ...state,
