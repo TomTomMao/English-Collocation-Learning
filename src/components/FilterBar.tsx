@@ -1,11 +1,12 @@
 interface FilterBarProps {
   topic: string;
   pattern: string;
+  patternOptions: string[];
   onTopicChange: (value: string) => void;
   onPatternChange: (value: string) => void;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ topic, pattern, onPatternChange, onTopicChange }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ topic, pattern, patternOptions, onPatternChange, onTopicChange }) => {
   return (
     <div className="filter-bar card">
       <div className="field">
@@ -21,9 +22,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ topic, pattern, onPatternChange, 
       <div className="field">
         <label>Pattern</label>
         <select value={pattern} onChange={(e) => onPatternChange(e.target.value)}>
-          {['All', 'verb+noun', 'adj+noun', 'verb+prep', 'adv+adj'].map((p) => (
+          {patternOptions.map((p) => (
             <option key={p} value={p}>
-              {p.replace('+', ' + ')}
+              {p === 'All' ? 'All' : p.split('+').join(' + ')}
             </option>
           ))}
         </select>

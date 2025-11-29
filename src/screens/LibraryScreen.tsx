@@ -2,16 +2,27 @@ import { useMemo, useState } from 'react';
 import CollocationCard from '../components/CollocationCard';
 import MultipleChoiceQuestion from '../components/MultipleChoiceQuestion';
 import SectionCard from '../components/SectionCard';
-import { useCollocations } from '../context/CollocationContext';
+import { useCollocations, type SavedCollocation } from '../context/CollocationContext';
+import { useToast } from '../components/ui/toast';
 
 const LibraryScreen = () => {
   const { saved, removeSaved } = useCollocations();
+  const toast = useToast();
   const [quizIndex, setQuizIndex] = useState(0);
   const quickQuiz = useMemo(() => saved.map((c) => ({
     prompt: `Fill in the blank: ${c.example.replace(c.text, '___')}`,
     options: [c.text, c.text.replace(' ', ' the '), c.text.replace(/\s[a-z]+$/, ' something')],
     answer: c.text,
   })), [saved]);
+
+  const handleRemove = (collocation: SavedCollocation) => {
+    removeSaved(collocation.id);
+    toast({
+      title: 'Removed from library',
+      description: `${collocation.text} left your saved list.`,
+      variant: 'info',
+    });
+  };
 
   const hasQuiz = quickQuiz.length > 0;
 
@@ -26,7 +37,7 @@ const LibraryScreen = () => {
               <CollocationCard
                 key={item.id}
                 collocation={item}
-                onAction={() => removeSaved(item.id)}
+                onAction={() => handleRemove(item)}
                 actionLabel="Remove"
                 subtle
               />

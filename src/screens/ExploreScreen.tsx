@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import CollocationCard from '../components/CollocationCard';
 import FilterBar from '../components/FilterBar';
 import { useCollocations, type Collocation } from '../context/CollocationContext';
@@ -9,6 +9,10 @@ const ExploreScreen = () => {
   const toast = useToast();
   const [topic, setTopic] = useState('All');
   const [pattern, setPattern] = useState('All');
+  const patternOptions = useMemo(() => {
+    const unique = new Set(collocations.map((c) => c.pattern));
+    return ['All', ...Array.from(unique)];
+  }, [collocations]);
 
   const handleSave = (collocation: Collocation) => {
     const added = addToSaved(collocation);
@@ -29,7 +33,13 @@ const ExploreScreen = () => {
 
   return (
     <div className="stack-lg">
-      <FilterBar topic={topic} pattern={pattern} onTopicChange={setTopic} onPatternChange={setPattern} />
+      <FilterBar
+        topic={topic}
+        pattern={pattern}
+        patternOptions={patternOptions}
+        onTopicChange={setTopic}
+        onPatternChange={setPattern}
+      />
       <div className="grid two-cols">
         {filtered.map((collocation) => (
           <CollocationCard
