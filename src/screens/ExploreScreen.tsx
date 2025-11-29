@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import CollocationCard from '../components/CollocationCard';
 import FilterBar from '../components/FilterBar';
 import { useCollocations, type Collocation } from '../context/CollocationContext';
@@ -9,10 +9,43 @@ const ExploreScreen = () => {
   const toast = useToast();
   const [topic, setTopic] = useState('All');
   const [pattern, setPattern] = useState('All');
-  const patternOptions = useMemo(() => {
-    const unique = new Set(collocations.map((c) => c.pattern));
-    return ['All', ...Array.from(unique)];
+  const topicValues = useMemo(() => {
+    const uniqueTopics = new Set<string>();
+    collocations.forEach((c) => c.topics.forEach((t) => uniqueTopics.add(t)));
+    return ['All', ...Array.from(uniqueTopics)];
   }, [collocations]);
+
+  const patternValues = useMemo(() => {
+    const uniquePatterns = new Set(collocations.map((c) => c.pattern));
+    return ['All', ...Array.from(uniquePatterns)];
+  }, [collocations]);
+
+  const countMatches = useCallback(
+    (topicValue: string, patternValue: string) =>
+      collocations.filter((c) => {
+        const topicMatch = topicValue === 'All' || c.topics.includes(topicValue);
+        const patternMatch = patternValue === 'All' || c.pattern === patternValue;
+        return topicMatch && patternMatch;
+      }).length,
+    [collocations],
+  );
+
+  const topicOptions = useMemo(
+    () => topicValues.map((value) => ({ value, count: countMatches(value, pattern) })),
+    [topicValues, countMatches, pattern],
+  );
+
+  const patternOptions = useMemo(
+    () => patternValues.map((value) => ({ value, count: countMatches(topic, value) })),
+    [patternValues, countMatches, topic],
+  );
+  const filtered = useMemo(() => {
+    return collocations.filter((c) => {
+      const topicMatch = topic === 'All' || c.topics.includes(topic);
+      const patternMatch = pattern === 'All' || c.pattern === pattern;
+      return topicMatch && patternMatch;
+    });
+  }, [collocations, topic, pattern]);
 
   const handleSave = (collocation: Collocation) => {
     const added = addToSaved(collocation);
@@ -25,17 +58,12 @@ const ExploreScreen = () => {
     });
   };
 
-  const filtered = collocations.filter((c) => {
-    const topicMatch = topic === 'All' || c.topics.includes(topic);
-    const patternMatch = pattern === 'All' || c.pattern === pattern;
-    return topicMatch && patternMatch;
-  });
-
   return (
     <div className="stack-lg">
       <FilterBar
         topic={topic}
         pattern={pattern}
+        topicOptions={topicOptions}
         patternOptions={patternOptions}
         onTopicChange={setTopic}
         onPatternChange={setPattern}

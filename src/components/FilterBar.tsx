@@ -1,20 +1,26 @@
+type FilterOption = {
+  value: string;
+  count: number;
+};
+
 interface FilterBarProps {
   topic: string;
   pattern: string;
-  patternOptions: string[];
+  topicOptions: FilterOption[];
+  patternOptions: FilterOption[];
   onTopicChange: (value: string) => void;
   onPatternChange: (value: string) => void;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ topic, pattern, patternOptions, onPatternChange, onTopicChange }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ topic, pattern, topicOptions, patternOptions, onPatternChange, onTopicChange }) => {
   return (
     <div className="filter-bar card">
       <div className="field">
         <label>Topic</label>
         <select value={topic} onChange={(e) => onTopicChange(e.target.value)}>
-          {['All', 'Travel', 'Work', 'Study', 'Daily life', 'Weather', 'Emotions', 'Food'].map((t) => (
-            <option key={t} value={t}>
-              {t}
+          {topicOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {`${option.value} (${option.count})`}
             </option>
           ))}
         </select>
@@ -22,9 +28,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ topic, pattern, patternOptions, o
       <div className="field">
         <label>Pattern</label>
         <select value={pattern} onChange={(e) => onPatternChange(e.target.value)}>
-          {patternOptions.map((p) => (
-            <option key={p} value={p}>
-              {p === 'All' ? 'All' : p.split('+').join(' + ')}
+          {patternOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {`${option.value === 'All' ? 'All' : option.value.split('+').join(' + ')} (${option.count})`}
             </option>
           ))}
         </select>

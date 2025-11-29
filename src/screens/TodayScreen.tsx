@@ -2,26 +2,37 @@ import { useEffect, useState } from 'react';
 import CollocationCard from '../components/CollocationCard';
 import MultipleChoiceQuestion from '../components/MultipleChoiceQuestion';
 import SectionCard from '../components/SectionCard';
-import { useCollocations, type Collocation } from '../context/CollocationContext';
+import { useCollocations, type Collocation, type DailyQuestion } from '../context/CollocationContext';
 import { useToast } from '../components/ui/toast';
 
-const warmUpQuestions = [
-  {
-    prompt: 'We need to ___ a decision soon.',
-    options: ['do', 'make', 'take'],
-    answer: 'make',
-  },
-  {
-    prompt: 'Please ___ attention to the road signs.',
-    options: ['pay', 'take', 'do'],
-    answer: 'pay',
-  },
-  {
-    prompt: 'She hopes to ___ a record this season.',
-    options: ['set', 'break', 'build'],
-    answer: 'break',
-  },
-];
+const blankWithCollocation = (collocation: Collocation) => {
+  if (collocation.example.includes(collocation.text)) {
+    return collocation.example.replace(collocation.text, '___');
+  }
+  return `Fill in the blank: ${collocation.text.replace(' ', ' ___ ')}`;
+};
+
+const shuffleStrings = (values: string[]) => [...values].sort(() => Math.random() - 0.5);
+
+const createWarmUpQuestions = (items: Collocation[], count = 3): DailyQuestion[] => {
+  if (!items.length) return [];
+
+  const targets = selectRandomCollocations(items, count);
+  return targets.map((collocation) => {
+    const distractors = selectRandomCollocations(
+      items.filter((item) => item.id !== collocation.id),
+      2,
+    ).map((item) => item.text);
+
+    const options = shuffleStrings([collocation.text, ...distractors]);
+
+    return {
+      prompt: blankWithCollocation(collocation),
+      options,
+      answer: collocation.text,
+    };
+  });
+};
 
 const reviewItems = [
   {
@@ -54,14 +65,17 @@ const selectRandomCollocations = (items: Collocation[], count = 5) => {
 const TodayScreen = () => {
   const { collocations, addToSaved } = useCollocations();
   const toast = useToast();
+  const [warmUpQuestions, setWarmUpQuestions] = useState<DailyQuestion[]>([]);
   const [todaysCollocations, setTodaysCollocations] = useState<Collocation[]>([]);
 
   useEffect(() => {
     setTodaysCollocations(selectRandomCollocations(collocations));
+    setWarmUpQuestions(createWarmUpQuestions(collocations));
   }, [collocations]);
 
   const refreshDaily = () => {
     setTodaysCollocations(selectRandomCollocations(collocations));
+    setWarmUpQuestions(createWarmUpQuestions(collocations));
     toast({
       title: 'Daily collocations refreshed',
       description: 'Here are some new pairs to explore today.',
