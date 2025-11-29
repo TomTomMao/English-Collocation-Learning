@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { collocations as mockCollocations } from '../data/collocations';
 
 export type Collocation = {
@@ -28,41 +29,33 @@ export type GapReview = {
   answer: string;
 };
 
-interface CollocationContextValue {
+interface CollocationState {
   saved: SavedCollocation[];
+  collocations: Collocation[];
   addToSaved: (collocation: Collocation) => void;
   removeSaved: (id: string) => void;
-  collocations: Collocation[];
 }
 
-const CollocationContext = createContext<CollocationContextValue | undefined>(undefined);
-
-export const CollocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [saved, setSaved] = useState<SavedCollocation[]>([]);
-
-  const addToSaved = (collocation: Collocation) => {
-    setSaved((prev) => {
-      if (prev.find((item) => item.id === collocation.id)) return prev;
-      return [...prev, { ...collocation, mastery: 'New' }];
-    });
-  };
-
-  const removeSaved = (id: string) => {
-    setSaved((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const value = useMemo(
-    () => ({ saved, addToSaved, removeSaved, collocations: mockCollocations }),
-    [saved],
-  );
-
-  return <CollocationContext.Provider value={value}>{children}</CollocationContext.Provider>;
-};
-
-export const useCollocations = (): CollocationContextValue => {
-  const context = useContext(CollocationContext);
-  if (!context) {
-    throw new Error('useCollocations must be used within CollocationProvider');
-  }
-  return context;
-};
+export const useCollocations = create<CollocationState>()(
+  persist(
+    (set) => ({
+      saved: [],
+      collocations: mockCollocations,
+      addToSaved: (collocation: Collocation) =>
+        set((state) => {
+          if (state.saved.some((item) => item.id === collocation.id)) return state;
+          return { ...state, saved: [...state.saved, { ...collocation, mastery: 'New' }] };
+        }),
+      removeSaved: (id: string) =>
+        set((state) => ({
+          ...state,
+          saved: state.saved.filter((item) => item.id !== id),
+        })),
+    }),
+    {
+      name: 'collocation-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ saved: state.saved }),
+    },
+  ),
+);
