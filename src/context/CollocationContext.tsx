@@ -5,7 +5,7 @@ import { collocations as mockCollocations } from '../data/collocations';
 export type Collocation = {
   id: string;
   text: string;
-  pattern: 'verb+noun' | 'adj+noun' | 'verb+prep' | 'adv+adj';
+  pattern: 'verb+noun' | 'adj+noun' | 'verb+prep' | 'adv+adj' | 'adv+vpp' | 'noun+noun' | 'verb+adv' | 'verb+adj' | 'adv+verb';
   topics: string[];
   definition: string;
   example: string;
