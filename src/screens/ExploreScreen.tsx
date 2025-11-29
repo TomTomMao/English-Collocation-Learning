@@ -1,12 +1,25 @@
 import { useState } from 'react';
 import CollocationCard from '../components/CollocationCard';
 import FilterBar from '../components/FilterBar';
-import { useCollocations } from '../context/CollocationContext';
+import { useCollocations, type Collocation } from '../context/CollocationContext';
+import { useToast } from '../components/ui/toast';
 
 const ExploreScreen = () => {
   const { collocations, addToSaved } = useCollocations();
+  const toast = useToast();
   const [topic, setTopic] = useState('All');
   const [pattern, setPattern] = useState('All');
+
+  const handleSave = (collocation: Collocation) => {
+    const added = addToSaved(collocation);
+    toast({
+      title: added ? 'Added to library' : 'Already saved',
+      description: added
+        ? `${collocation.text} was added to your personal list.`
+        : `${collocation.text} is already in your library.`,
+      variant: added ? 'success' : 'info',
+    });
+  };
 
   const filtered = collocations.filter((c) => {
     const topicMatch = topic === 'All' || c.topics.includes(topic);
@@ -22,7 +35,7 @@ const ExploreScreen = () => {
           <CollocationCard
             key={collocation.id}
             collocation={collocation}
-            onAction={addToSaved}
+            onAction={handleSave}
             actionLabel="Add to My List"
           />
         ))}

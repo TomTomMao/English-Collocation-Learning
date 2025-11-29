@@ -144,6 +144,18 @@ button:disabled {
   border: 1px solid #c7d2fe;
 }
 
+.ghost.refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.ghost.refresh::before {
+  content: '⟳';
+  font-size: 14px;
+}
+
 .grid {
   display: grid;
   gap: 18px;
@@ -278,6 +290,67 @@ select {
 
 .collocation-card.subtle {
   background: #f8fafc;
+}
+
+.toast-viewport {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 50;
+  max-width: 360px;
+}
+
+.toast {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toast.success {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.toast.info {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.toast.destructive {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.toast-title {
+  margin: 0 0 4px 0;
+  font-weight: 700;
+}
+
+.toast-description {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.4;
+}
+
+.toast-close {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.toast-close:hover {
+  color: #111827;
 }
 
 @media (max-width: 640px) {
