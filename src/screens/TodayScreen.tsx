@@ -14,7 +14,7 @@ const blankWithCollocation = (collocation: Collocation) => {
 
 const shuffleStrings = (values: string[]) => [...values].sort(() => Math.random() - 0.5);
 
-const createWarmUpQuestions = (items: Collocation[], count = 3): DailyQuestion[] => {
+const createBlankQuestions = (items: Collocation[], count = 3, helper?: string): DailyQuestion[] => {
   if (!items.length) return [];
 
   const targets = selectRandomCollocations(items, count);
@@ -30,30 +30,10 @@ const createWarmUpQuestions = (items: Collocation[], count = 3): DailyQuestion[]
       prompt: blankWithCollocation(collocation),
       options,
       answer: collocation.text,
+      helper,
     };
   });
 };
-
-const reviewItems = [
-  {
-    id: 'r1',
-    sentence: 'He finally decided to ___ responsibility for the mistake.',
-    options: ['take', 'do', 'make'],
-    answer: 'take',
-  },
-  {
-    id: 'r2',
-    sentence: 'It was ___ recommended by my teacher.',
-    options: ['highly', 'strongly', 'heavily'],
-    answer: 'highly',
-  },
-  {
-    id: 'r3',
-    sentence: 'She ___ into tears after the call.',
-    options: ['burst', 'broke', 'went'],
-    answer: 'burst',
-  },
-];
 
 const selectRandomCollocations = (items: Collocation[], count = 5) => {
   if (!items.length) return [];
@@ -66,16 +46,19 @@ const TodayScreen = () => {
   const { collocations, addToSaved } = useCollocations();
   const toast = useToast();
   const [warmUpQuestions, setWarmUpQuestions] = useState<DailyQuestion[]>([]);
+  const [reviewQuestions, setReviewQuestions] = useState<DailyQuestion[]>([]);
   const [todaysCollocations, setTodaysCollocations] = useState<Collocation[]>([]);
 
   useEffect(() => {
     setTodaysCollocations(selectRandomCollocations(collocations));
-    setWarmUpQuestions(createWarmUpQuestions(collocations));
+    setWarmUpQuestions(createBlankQuestions(collocations));
+    setReviewQuestions(createBlankQuestions(collocations, 3, 'Recall the best-fit collocation'));
   }, [collocations]);
 
   const refreshDaily = () => {
     setTodaysCollocations(selectRandomCollocations(collocations));
-    setWarmUpQuestions(createWarmUpQuestions(collocations));
+    setWarmUpQuestions(createBlankQuestions(collocations));
+    setReviewQuestions(createBlankQuestions(collocations, 3, 'Recall the best-fit collocation'));
     toast({
       title: 'Daily collocations refreshed',
       description: 'Here are some new pairs to explore today.',
@@ -122,8 +105,14 @@ const TodayScreen = () => {
 
       <SectionCard title="Review" subtitle="Keep your streak alive">
         <div className="stack-sm">
-          {reviewItems.map((item) => (
-            <MultipleChoiceQuestion key={item.id} prompt={item.sentence} options={item.options} answer={item.answer} />
+          {reviewQuestions.map((item, idx) => (
+            <MultipleChoiceQuestion
+              key={`${item.answer}-${idx}`}
+              prompt={`${idx + 1}. ${item.prompt}`}
+              options={item.options}
+              answer={item.answer}
+              helper={item.helper}
+            />
           ))}
         </div>
       </SectionCard>
